@@ -131,6 +131,35 @@ class Config(metaclass=Singleton):
             os.environ["deepseek_proxyllm_api_base"] = os.getenv(
                 "DEEPSEEK_API_BASE", "https://api.deepseek.com/v1"
             )
+        self.claude_proxy_api_key = os.getenv("ANTHROPIC_API_KEY")
+        if self.claude_proxy_api_key:
+            os.environ["claude_proxyllm_proxy_api_key"] = self.claude_proxy_api_key
+            os.environ["claude_proxyllm_proxyllm_backend"] = os.getenv(
+                "ANTHROPIC_MODEL_VERSION", "claude-3-5-sonnet-20241022"
+            )
+            os.environ["claude_proxyllm_api_base"] = os.getenv(
+                "ANTHROPIC_BASE_URL", "https://api.anthropic.com"
+            )
+        self.siliconflow_proxy_api_key = os.getenv("SILICONFLOW_API_KEY")
+        if self.siliconflow_proxy_api_key:
+            os.environ[
+                "siliconflow_proxyllm_proxy_api_key"
+            ] = self.siliconflow_proxy_api_key
+            os.environ["siliconflow_proxyllm_proxyllm_backend"] = os.getenv(
+                "SILICONFLOW_MODEL_VERSION", "Qwen/Qwen2.5-Coder-32B-Instruct"
+            )
+            os.environ["siliconflow_proxyllm_api_base"] = os.getenv(
+                "SILICONFLOW_API_BASE", "https://api.siliconflow.cn/v1"
+            )
+        self.gitee_proxy_api_key = os.getenv("GITEE_API_KEY")
+        if self.gitee_proxy_api_key:
+            os.environ["gitee_proxyllm_proxy_api_key"] = self.gitee_proxy_api_key
+            os.environ["gitee_proxyllm_proxyllm_backend"] = os.getenv(
+                "GITEE_MODEL_VERSION", "Qwen2.5-72B-Instruct"
+            )
+            os.environ["gitee_proxyllm_api_base"] = os.getenv(
+                "GITEE_API_BASE", "https://ai.gitee.com/v1"
+            )
 
         self.proxy_server_url = os.getenv("PROXY_SERVER_URL")
 
@@ -244,6 +273,9 @@ class Config(metaclass=Singleton):
 
         # EMBEDDING Configuration
         self.EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text2vec")
+        self.EMBEDDING_MODEL_MAX_SEQ_LEN = int(
+            os.getenv("MEMBEDDING_MODEL_MAX_SEQ_LEN", 512)
+        )
         # Rerank model configuration
         self.RERANK_MODEL = os.getenv("RERANK_MODEL")
         self.RERANK_MODEL_PATH = os.getenv("RERANK_MODEL_PATH")
@@ -257,6 +289,7 @@ class Config(metaclass=Singleton):
         self.KNOWLEDGE_MAX_CHUNKS_ONCE_LOAD = int(
             os.getenv("KNOWLEDGE_MAX_CHUNKS_ONCE_LOAD", 10)
         )
+        self.KNOWLEDGE_MAX_THREADS = int(os.getenv("KNOWLEDGE_MAX_THREADS", 1))
         # default recall similarity score, between 0 and 1
         self.KNOWLEDGE_SEARCH_RECALL_SCORE = float(
             os.getenv("KNOWLEDGE_SEARCH_RECALL_SCORE", 0.3)
@@ -331,6 +364,17 @@ class Config(metaclass=Singleton):
 
         self.SCHEDULER_ENABLED = (
             os.getenv("SCHEDULER_ENABLED", "True").lower() == "true"
+        )
+        self.NOTE_BOOK_ENABLE: bool = (
+            os.getenv("NOTE_BOOK_ENABLE", "True").lower() == "true"
+        )
+        self.NOTE_BOOK_ROOT: str = os.getenv("NOTE_BOOK_ROOT", os.path.expanduser("~"))
+
+        self.MESSAGES_KEEP_START_ROUNDS: int = int(
+            os.getenv("MESSAGES_KEEP_START_ROUNDS", 0)
+        )
+        self.MESSAGES_KEEP_END_ROUNDS: int = int(
+            os.getenv("MESSAGES_KEEP_END_ROUNDS", 2)
         )
 
     @property

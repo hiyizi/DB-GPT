@@ -17,15 +17,23 @@ pip install "dbgpt[graph_rag]>=0.6.1"
 
 To store the knowledge in graph, we need an graph database, [TuGraph](https://github.com/TuGraph-family/tugraph-db) is the first graph database supported by DB-GPT.
 
-Visit github repository of TuGraph to view [Quick Start](https://tugraph-db.readthedocs.io/zh-cn/latest/3.quick-start/1.preparation.html#id5) document, follow the instructions to pull the TuGraph database docker image (latest / version >= 4.3.2) and launch it.
+Visit github repository of TuGraph to view [Quick Start](https://tugraph-db.readthedocs.io/zh-cn/latest/3.quick-start/1.preparation.html#id5) document, follow the instructions to pull the TuGraph database docker image (latest / version >= 4.5.0) and launch it.
 
 ```
-docker pull tugraph/tugraph-runtime-centos7:latest
+docker pull tugraph/tugraph-runtime-centos7:4.5.1
 docker run -d -p 7070:7070  -p 7687:7687 -p 9090:9090 --name tugraph_demo tugraph/tugraph-runtime-centos7:latest lgraph_server -d run --enable_plugin true
 ```
 
 The default port for the bolt protocol is `7687`.
 
+> **Download Tips:**
+> 
+> There is also a corresponding version of the TuGraph Docker image package on OSS. You can also directly download and import it.
+> 
+> ```
+> wget 'https://tugraph-web.oss-cn-beijing.aliyuncs.com/tugraph/tugraph-4.5.1/tugraph-runtime-centos7-4.5.1.tar' -O tugraph-runtime-centos7-4.5.1.tar
+> docker load -i tugraph-runtime-centos7-4.5.1.tar
+> ```
 
 
 ### Prepare LLM
@@ -117,6 +125,7 @@ TRIPLET_GRAPH_ENABLED=True  # enable the graph search for the triplets
 DOCUMENT_GRAPH_ENABLED=True  # enable the graph search for documents and chunks
 KNOWLEDGE_GRAPH_CHUNK_SEARCH_TOP_SIZE=5  # the number of the searched triplets in a retrieval
 KNOWLEDGE_GRAPH_EXTRACTION_BATCH_SIZE=20  # the batch size of triplet extraction from the text
+COMMUNITY_SUMMARY_BATCH_SIZE=20  # the batch size of parallel community summary process
 ```
 
 
@@ -233,7 +242,8 @@ First, create a knowledge base using the `Knowledge Graph` type.
   <img src={'/img/chat_knowledge/graph_rag/create_knowledge_graph.png'} width="1000px"/>
 </p>
 
-Then, upload the documents ([tugraph.md](https://github.com/eosphoros-ai/DB-GPT/blob/main/examples/test_files/tugraph.md), [osgraph.md](https://github.com/eosphoros-ai/DB-GPT/blob/main/examples/test_files/osgraph.md), [dbgpt.md](https://github.com/eosphoros-ai/DB-GPT/blob/main/examples/test_files/dbgpt.md)) and process them automatically (markdown header by default).
+Then, upload the documents ([graphrag-test.md](https://github.com/eosphoros-ai/DB-GPT/blob/main/examples/test_files/graphrag-test.md)) and process them automatically (markdown header by default).
+
 <p align="left">
   <img src={'/img/chat_knowledge/graph_rag/upload_file.png'} width="1000px"/>
 </p>
@@ -254,14 +264,15 @@ Performance testing is based on the `gpt-4o-mini` model.
 
 #### Indexing Performance
 
-|                   | DB-GPT                | GraphRAG(microsoft)  |
-| ----------------- | --------------------- | -------------------- |
-| Document Tokens   | 42631                 | 42631                |
-| Graph Size        | 808 nodes, 1170 edges | 779 nodes, 967 edges |
-| Prompt Tokens     | 452614                | 744990               |
-| Completion Tokens | 48325                 | 227230               |
-| Total Tokens      | 500939                | 972220               |
-
+|                     | DB-GPT                | GraphRAG(microsoft)  |
+| ------------------- | --------------------- | -------------------- |
+| Doc Tokens          | 42631                 | 42631                |
+| Triplets Graph      | 734 nodes, 1064 edges | 779 nodes, 967 edges |
+| Doc Structure Graph | 76 nodes, 1090 edges  | N/A                  |
+| Prompt Tokens       | 375768                | 744990               |
+| Completion Tokens   | 41797                 | 227230               |
+| Total Tokens        | **417565**            | 972220               |
+| Indexing Time       | **170s**              | 210s                 |
 
 #### Querying Performance
 
@@ -369,6 +380,12 @@ Knowledge Graph = Triplets Graph + Document Structure Graph
 
 <p align="left">
   <img src={'/img/chat_knowledge/graph_rag/image_graphrag_0_6_1.png'} width="1000px"/>
+</p>
+
+Thanks to the Document Structure Graph, GraphRAG now can provide references to the original text when answering:
+
+<p align="left">
+  <img src={'/img/chat_knowledge/graph_rag/doc_structure_graph_demo.png'} width="1000px"/>
 </p>
 
 How?
